@@ -11,7 +11,11 @@ import { Loader2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 const NIVELES = ['Primario', 'Secundario', 'Terciario', 'Universitario']
-const TURNOS = ['Mañana', 'Tarde', 'Noche', 'Vespertino']
+const TURNOS = [
+  { value: 'mañana', label: 'Mañana' },
+  { value: 'tarde', label: 'Tarde' },
+  { value: 'noche', label: 'Noche' },
+]
 
 interface Props {
   instId: string
@@ -99,7 +103,7 @@ export default function NuevoCursoSheet({ instId, añoLectivoId }: Props) {
                   <SelectValue placeholder="Seleccionar turno..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {TURNOS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {TURNOS.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
