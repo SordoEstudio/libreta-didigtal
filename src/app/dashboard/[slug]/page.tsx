@@ -1,4 +1,4 @@
-import { requireSession, isSuperadmin, hasAnyRole } from '@/lib/auth'
+import { requireSession, isSuperadmin, hasAnyRole, hasRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,6 +22,26 @@ export default async function InstitucionDashboardPage({ params }: Params) {
 
   if (!isSuperadmin(session) && !hasAnyRole(session, inst.id, ['admin', 'docente', 'responsable']))
     redirect('/dashboard')
+
+  const soloResponsable =
+    !isSuperadmin(session) &&
+    !hasRole(session, inst.id, 'admin') &&
+    !hasRole(session, inst.id, 'docente') &&
+    hasRole(session, inst.id, 'responsable')
+
+  if (soloResponsable) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{inst.nombre}</h1>
+          <p className="text-sm text-muted-foreground">{inst.tipo ?? 'Institución educativa'}</p>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Bienvenido/a. Próximamente podrás consultar la libreta de calificaciones de los alumnos a tu cargo.
+        </p>
+      </div>
+    )
+  }
 
   const [cursos, alumnos, usuarios, notas] = await Promise.all([
     supabase.from('cursos').select('id', { count: 'exact', head: true }).eq('institucion_id', inst.id).is('deleted_at', null),
