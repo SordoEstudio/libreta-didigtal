@@ -1,0 +1,39 @@
+import { Resend } from 'resend'
+import { createElement } from 'react'
+import { NotaNuevaEmail, type NotaNuevaEmailProps } from '@/emails/nota-nueva'
+import { BienvenidaEmail, type BienvenidaEmailProps } from '@/emails/bienvenida'
+
+const FROM_ADDRESS = process.env.EMAIL_FROM ?? 'Libreta Digital <notificaciones@libretadigital.app>'
+
+function getResend() {
+  const key = process.env.RESEND_API_KEY
+  if (!key) throw new Error('RESEND_API_KEY not set')
+  return new Resend(key)
+}
+
+export async function sendNotaNueva(to: string, props: NotaNuevaEmailProps, notaId: string) {
+  const resend = getResend()
+  const { error } = await resend.emails.send(
+    {
+      from: FROM_ADDRESS,
+      to: [to],
+      subject: `Nueva nota para ${props.alumno_nombre} en ${props.materia_nombre}`,
+      react: createElement(NotaNuevaEmail, props),
+    },
+    { idempotencyKey: `nota-nueva/${notaId}/${to}` }
+  )
+  if (error) console.error('[email] sendNotaNueva failed:', error.message)
+  return !error
+}
+
+export async function sendBienvenida(to: string, props: BienvenidaEmailProps) {
+  const resend = getResend()
+  const { error } = await resend.emails.send({
+    from: FROM_ADDRESS,
+    to: [to],
+    subject: `Bienvenido a ${props.institucion_nombre} — Libreta Digital`,
+    react: createElement(BienvenidaEmail, props),
+  })
+  if (error) console.error('[email] sendBienvenida failed:', error.message)
+  return !error
+}
