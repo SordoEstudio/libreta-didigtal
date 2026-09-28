@@ -23,13 +23,50 @@ export async function getSession(): Promise<SessionUser | null> {
 
   const metadata = user.app_metadata
 
+  // JWT enriched by Custom Access Token Hook (Team plan)
+  if (metadata?.persona_id) {
+    return {
+      auth_id: user.id,
+      email: user.email ?? '',
+      persona_id: metadata.persona_id,
+      nombre: metadata.nombre ?? null,
+      memberships: metadata.memberships ?? [],
+      sin_institucion: metadata.sin_institucion ?? false,
+    }
+  }
+
+  // Hook unavailable (free plan) — query DB directly.
+  // auth.uid() is always present so RLS still works.
+  const { data: persona } = await supabase
+    .from('personas')
+    .select('id, nombre')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!persona) {
+    return {
+      auth_id: user.id,
+      email: user.email ?? '',
+      persona_id: null,
+      nombre: null,
+      memberships: [],
+      sin_institucion: true,
+    }
+  }
+
+  const { data: memberships } = await supabase
+    .from('memberships')
+    .select('institucion_id, rol')
+    .eq('persona_id', persona.id)
+    .eq('activo', true)
+
   return {
     auth_id: user.id,
     email: user.email ?? '',
-    persona_id: metadata?.persona_id ?? null,
-    nombre: metadata?.nombre ?? null,
-    memberships: metadata?.memberships ?? [],
-    sin_institucion: metadata?.sin_institucion ?? true,
+    persona_id: persona.id,
+    nombre: persona.nombre,
+    memberships: (memberships ?? []) as Membership[],
+    sin_institucion: (memberships ?? []).length === 0,
   }
 }
 
