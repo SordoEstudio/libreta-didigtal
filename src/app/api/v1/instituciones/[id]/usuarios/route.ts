@@ -25,8 +25,8 @@ export async function GET(request: NextRequest, { params }: Params) {
   const rol = sp.get('rol')
   const q = sp.get('q')
 
-  const supabase = await createClient()
-  let query = supabase
+  const admin = createAdminClient()
+  let query = admin
     .from('memberships')
     .select('rol, personas(id, nombre, email)')
     .eq('institucion_id', institucion_id)
