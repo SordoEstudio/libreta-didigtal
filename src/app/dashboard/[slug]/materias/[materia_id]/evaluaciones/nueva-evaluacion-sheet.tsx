@@ -101,7 +101,9 @@ export default function NuevaEvaluacionSheet({ materiaId, periodos }: Props) {
               <Label htmlFor="ev-periodo">Período *</Label>
               <Select value={periodoId} onValueChange={v => setPeriodoId(v ?? '')}>
                 <SelectTrigger id="ev-periodo">
-                  <SelectValue placeholder="Seleccionar período..." />
+                  <SelectValue placeholder="Seleccionar período...">
+                    {periodoId ? periodos.find(p => p.id === periodoId)?.nombre : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {periodos.map(p => (
@@ -112,7 +114,7 @@ export default function NuevaEvaluacionSheet({ materiaId, periodos }: Props) {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="ev-peso">Peso</Label>
+              <Label htmlFor="ev-peso">Ponderación</Label>
               <Input
                 id="ev-peso"
                 type="number"
@@ -121,6 +123,9 @@ export default function NuevaEvaluacionSheet({ materiaId, periodos }: Props) {
                 value={peso}
                 onChange={e => setPeso(e.target.value)}
               />
+              <p className="text-xs text-muted-foreground">
+                Coeficiente para el promedio. Ej: parcial=2, tp=1.
+              </p>
             </div>
 
             <Button

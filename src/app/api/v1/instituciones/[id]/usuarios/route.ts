@@ -86,10 +86,11 @@ export async function POST(request: NextRequest, { params }: Params) {
       .select('id')
       .eq('persona_id', persona_id)
       .eq('institucion_id', institucion_id)
+      .eq('rol', rol)
       .eq('activo', true)
       .single()
 
-    if (existingMembership) return Err.conflict('Usuario ya tiene membresía activa en esta institución')
+    if (existingMembership) return Err.conflict('Usuario ya tiene ese rol en esta institución')
   } else {
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
       email,
