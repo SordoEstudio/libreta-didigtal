@@ -67,8 +67,10 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const { email, nombre, rol } = parsed.data
   const supabase = await createClient()
+  const admin = createAdminClient()
 
-  const { data: existente } = await supabase
+  // personas has no INSERT policy and SELECT is own-only — use admin client
+  const { data: existente } = await admin
     .from('personas')
     .select('id')
     .eq('email', email)
@@ -79,7 +81,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   if (existente) {
     persona_id = existente.id
-    const { data: existingMembership } = await supabase
+    const { data: existingMembership } = await admin
       .from('memberships')
       .select('id')
       .eq('persona_id', persona_id)
@@ -89,14 +91,13 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     if (existingMembership) return Err.conflict('Usuario ya tiene membresía activa en esta institución')
   } else {
-    const admin = createAdminClient()
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
       email,
       email_confirm: true,
     })
     if (authError || !authData.user) return Err.server(authError?.message ?? 'Error al crear usuario')
 
-    const { data: persona, error: personaError } = await supabase
+    const { data: persona, error: personaError } = await admin
       .from('personas')
       .insert({ nombre, email, auth_id: authData.user.id })
       .select('id')
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     persona_id = persona.id
   }
 
-  const { error: membError } = await supabase
+  const { error: membError } = await admin
     .from('memberships')
     .insert({ persona_id, institucion_id, rol })
 
