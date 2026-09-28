@@ -38,15 +38,20 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 
   if (docentes_ids !== undefined) {
-    await supabase.from('materia_docentes').delete().eq('materia_id', id)
+    const { error: deleteError } = await supabase
+      .from('materia_docentes').delete().eq('materia_id', id)
+    if (deleteError) return Err.server(deleteError.message)
+
     if (docentes_ids.length > 0) {
-      await supabase.from('materia_docentes').insert(
-        docentes_ids.map(persona_id => ({
-          materia_id: id,
-          persona_id,
-          institucion_id: materia.institucion_id,
-        }))
-      )
+      const { error: insertError } = await supabase
+        .from('materia_docentes').insert(
+          docentes_ids.map(persona_id => ({
+            materia_id: id,
+            persona_id,
+            institucion_id: materia.institucion_id,
+          }))
+        )
+      if (insertError) return Err.server(insertError.message)
     }
   }
 

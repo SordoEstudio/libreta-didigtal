@@ -22,5 +22,12 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await query
   if (error) return Err.server(error.message)
-  return ok(data)
+
+  const { count: sin_leer } = await supabase
+    .from('notificaciones')
+    .select('id', { count: 'exact', head: true })
+    .eq('persona_id', session.persona_id)
+    .eq('leido', false)
+
+  return ok(data, { sin_leer: sin_leer ?? 0 })
 }

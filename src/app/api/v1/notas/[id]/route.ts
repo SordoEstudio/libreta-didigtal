@@ -20,13 +20,17 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const supabase = await createClient()
   const { data: nota } = await supabase
     .from('notas')
-    .select('id, institucion_id')
+    .select('id, institucion_id, docente_id')
     .eq('id', id)
     .is('deleted_at', null)
     .single()
 
   if (!nota) return Err.notFound()
   if (!isSuperadmin(session) && !hasAnyRole(session, nota.institucion_id, ['admin', 'docente'])) return Err.forbidden()
+
+  // Docente can only edit their own notas
+  const isDocente = !isSuperadmin(session) && !hasAnyRole(session, nota.institucion_id, ['admin'])
+  if (isDocente && nota.docente_id !== session.persona_id) return Err.forbidden()
 
   const body = await request.json().catch(() => null)
   const parsed = PatchSchema.safeParse(body)

@@ -7,6 +7,7 @@ import { ok, Err } from '@/lib/api'
 const PatchSchema = z.object({
   rol: z.enum(['admin', 'docente', 'responsable']).optional(),
   nombre: z.string().min(1).optional(),
+  activo: z.boolean().optional(),
 }).strict()
 
 type Params = { params: Promise<{ id: string; persona_id: string }> }
@@ -21,13 +22,13 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const parsed = PatchSchema.safeParse(body)
   if (!parsed.success) return Err.validation(parsed.error.issues[0].message)
 
-  const { rol, ...personaData } = parsed.data
+  const { rol, activo, ...personaData } = parsed.data
   const supabase = await createClient()
 
-  if (rol) {
+  if (rol !== undefined || activo !== undefined) {
     const { error } = await supabase
       .from('memberships')
-      .update({ rol })
+      .update({ ...(rol !== undefined && { rol }), ...(activo !== undefined && { activo }) })
       .eq('persona_id', persona_id)
       .eq('institucion_id', institucion_id)
       .eq('activo', true)
