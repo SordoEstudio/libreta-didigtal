@@ -6,6 +6,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { Users } from 'lucide-react'
+import NuevoUsuarioSheet from './nuevo-usuario-sheet'
 
 type Params = { params: Promise<{ slug: string }> }
 
@@ -52,6 +53,7 @@ export default async function UsuariosPage({ params }: Params) {
           <h1 className="text-2xl font-semibold">Usuarios</h1>
           <p className="text-sm text-muted-foreground">{memberships?.length ?? 0} miembros activos</p>
         </div>
+        <NuevoUsuarioSheet instId={inst.id} />
       </div>
 
       {memberships && memberships.length > 0 ? (

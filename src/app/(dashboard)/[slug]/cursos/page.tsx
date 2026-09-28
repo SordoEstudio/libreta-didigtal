@@ -1,11 +1,12 @@
-import { requireSession, isSuperadmin, hasAnyRole } from '@/lib/auth'
+import { requireSession, isSuperadmin, hasAnyRole, hasRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { BookOpen, Users } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
+import NuevoCursoSheet from './nuevo-curso-sheet'
 
 type Params = { params: Promise<{ slug: string }> }
 
@@ -53,6 +54,9 @@ export default async function CursosPage({ params }: Params) {
             {añoActivo?.nombre ?? 'Sin año lectivo'} · {cursos?.length ?? 0} cursos
           </p>
         </div>
+        {(isSuperadmin(session) || hasRole(session, inst.id, 'admin')) && añoActivo && (
+          <NuevoCursoSheet instId={inst.id} añoLectivoId={añoActivo.id} />
+        )}
       </div>
 
       {!añoActivo && (

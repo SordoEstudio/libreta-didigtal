@@ -8,6 +8,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { GraduationCap } from 'lucide-react'
+import NuevoAlumnoSheet from './nuevo-alumno-sheet'
 
 type Params = { params: Promise<{ slug: string }> }
 
@@ -33,6 +34,13 @@ export default async function AlumnosPage({ params }: Params) {
     .is('deleted_at', null)
     .order('nombre')
 
+  const { data: cursosDisponibles } = await supabase
+    .from('cursos')
+    .select('id, nombre')
+    .eq('institucion_id', inst.id)
+    .is('deleted_at', null)
+    .order('nombre')
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -40,6 +48,7 @@ export default async function AlumnosPage({ params }: Params) {
           <h1 className="text-2xl font-semibold">Alumnos</h1>
           <p className="text-sm text-muted-foreground">{alumnos?.length ?? 0} registrados</p>
         </div>
+        <NuevoAlumnoSheet instId={inst.id} cursos={cursosDisponibles ?? []} />
       </div>
 
       {alumnos && alumnos.length > 0 ? (
