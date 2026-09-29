@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const supabase = await createClient()
   const { data: materia } = await supabase
     .from('materias')
-    .select('institucion_id')
+    .select('institucion_id, catalogo_id')
     .eq('id', id)
     .single()
 
@@ -31,10 +31,35 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const parsed = PatchSchema.safeParse(body)
   if (!parsed.success) return Err.validation(parsed.error.issues[0].message)
 
-  const { docentes_ids, ...materiaData } = parsed.data
+  const { nombre, docentes_ids, ...materiaFields } = parsed.data
+  const updateData: Record<string, unknown> = { ...materiaFields }
 
-  if (Object.keys(materiaData).length > 0) {
-    await supabase.from('materias').update(materiaData).eq('id', id)
+  // If nombre provided, find-or-create catalog entry and update link
+  if (nombre !== undefined) {
+    const { data: existing } = await supabase
+      .from('materias_catalogo')
+      .select('id')
+      .eq('institucion_id', materia.institucion_id)
+      .ilike('nombre', nombre)
+      .is('deleted_at', null)
+      .single()
+
+    if (existing) {
+      updateData.catalogo_id = existing.id
+    } else {
+      const { data: newEntry, error: catalogError } = await supabase
+        .from('materias_catalogo')
+        .insert({ nombre, institucion_id: materia.institucion_id })
+        .select('id')
+        .single()
+      if (catalogError) return Err.server(catalogError.message)
+      updateData.catalogo_id = newEntry.id
+    }
+  }
+
+  if (Object.keys(updateData).length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await supabase.from('materias').update(updateData as any).eq('id', id)
   }
 
   if (docentes_ids !== undefined) {
@@ -57,12 +82,17 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const { data, error } = await supabase
     .from('materias')
-    .select('id, nombre, escala_id')
+    .select('id, catalogo_id, escala_id, materias_catalogo(id, nombre)')
     .eq('id', id)
     .single()
 
   if (error) return Err.server(error.message)
-  return ok(data)
+  return ok({
+    id: data.id,
+    catalogo_id: data.catalogo_id,
+    nombre: (data.materias_catalogo as { nombre: string } | null)?.nombre ?? '',
+    escala_id: data.escala_id,
+  })
 }
 
 export async function DELETE(_request: NextRequest, { params }: Params) {

@@ -68,10 +68,10 @@ export default async function ConfiguracionPage({ params, searchParams }: Props)
   const { data: materias } = selectedCurso
     ? await admin
         .from('materias')
-        .select('id, nombre, materia_docentes(personas(id, nombre))')
+        .select('id, catalogo_id, materias_catalogo(id, nombre), materia_docentes(personas(id, nombre))')
         .eq('curso_id', selectedCurso.id)
         .is('deleted_at', null)
-        .order('nombre')
+        .order('materias_catalogo(nombre)')
     : { data: null }
 
   type Periodo = { id: string; nombre: string; orden: number }
@@ -215,9 +215,11 @@ export default async function ConfiguracionPage({ params, searchParams }: Props)
                         {materias.map(m => {
                           type MateriaDocente = { personas: { id: string; nombre: string } | null }
                           const docente = ((m.materia_docentes ?? []) as MateriaDocente[])[0]?.personas
+                          const catalogo = m.materias_catalogo as { id: string; nombre: string } | null
+                          const materiaNombre = catalogo?.nombre ?? ''
                           return (
                             <TableRow key={m.id}>
-                              <TableCell className="font-medium">{m.nombre}</TableCell>
+                              <TableCell className="font-medium">{materiaNombre}</TableCell>
                               <TableCell className="text-sm text-muted-foreground">
                                 {docente?.nombre ?? <span className="italic">Sin docente</span>}
                               </TableCell>
@@ -225,13 +227,13 @@ export default async function ConfiguracionPage({ params, searchParams }: Props)
                                 <div className="flex items-center gap-0.5">
                                   <AsignarDocenteSheet
                                     materiaId={m.id}
-                                    materiaNombre={m.nombre}
+                                    materiaNombre={materiaNombre}
                                     docenteActualId={docente?.id}
                                     instId={inst.id}
                                   />
                                   <EliminarMateriaButton
                                     materiaId={m.id}
-                                    materiaNombre={m.nombre}
+                                    materiaNombre={materiaNombre}
                                   />
                                 </div>
                               </TableCell>
