@@ -53,7 +53,7 @@ export default async function NotasPage({ params }: Params) {
           <span>{mat.nombre}</span>
         </div>
         <h1 className="text-2xl font-semibold">{evaluacion.nombre}</h1>
-        <p className="text-sm text-muted-foreground">Peso: {evaluacion.peso}% · Tipo: {evaluacion.tipo}</p>
+        <p className="text-sm text-muted-foreground capitalize">{evaluacion.tipo}</p>
       </div>
 
       <NotasEditor

@@ -30,7 +30,6 @@ export default function NuevaEvaluacionSheet({ materiaId, periodos }: Props) {
   const [nombre, setNombre] = useState('')
   const [tipo, setTipo] = useState('')
   const [periodoId, setPeriodoId] = useState('')
-  const [peso, setPeso] = useState('1')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -39,7 +38,7 @@ export default function NuevaEvaluacionSheet({ materiaId, periodos }: Props) {
     const res = await fetch(`/api/v1/materias/${materiaId}/evaluaciones`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, tipo, periodo_id: periodoId, peso: Number(peso) }),
+      body: JSON.stringify({ nombre, tipo, periodo_id: periodoId }),
     })
 
     const json = await res.json()
@@ -55,7 +54,6 @@ export default function NuevaEvaluacionSheet({ materiaId, periodos }: Props) {
     setNombre('')
     setTipo('')
     setPeriodoId('')
-    setPeso('1')
     router.refresh()
   }
 
@@ -111,21 +109,6 @@ export default function NuevaEvaluacionSheet({ materiaId, periodos }: Props) {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="ev-peso">Ponderación</Label>
-              <Input
-                id="ev-peso"
-                type="number"
-                min="0.1"
-                step="0.1"
-                value={peso}
-                onChange={e => setPeso(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Coeficiente para el promedio. Ej: parcial=2, tp=1.
-              </p>
             </div>
 
             <Button

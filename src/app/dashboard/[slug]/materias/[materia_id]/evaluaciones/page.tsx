@@ -87,7 +87,6 @@ export default async function EvaluacionesPage({ params }: Params) {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Período</TableHead>
-                <TableHead>Peso</TableHead>
                 <TableHead className="w-24">Notas</TableHead>
               </TableRow>
             </TableHeader>
@@ -103,7 +102,6 @@ export default async function EvaluacionesPage({ params }: Params) {
                     <TableCell className="text-sm text-muted-foreground">
                       {periodo?.nombre ?? '—'}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{ev.peso}</TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"

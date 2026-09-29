@@ -100,7 +100,6 @@ export default async function LibretaPage({ params }: Params) {
                     <TableRow>
                       <TableHead>Evaluación</TableHead>
                       <TableHead>Tipo</TableHead>
-                      <TableHead>Peso</TableHead>
                       <TableHead>Nota</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -113,7 +112,6 @@ export default async function LibretaPage({ params }: Params) {
                           <TableCell>
                             <Badge variant="outline">{ev?.tipo}</Badge>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{ev?.peso}%</TableCell>
                           <TableCell className="font-semibold">
                             {nota.valor_numerico ?? nota.valor_literal ?? '—'}
                           </TableCell>
