@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,11 @@ import { AlertCircle, Loader2 } from 'lucide-react'
 export default function UpdatePasswordPage() {
   const router = useRouter()
   const [password, setPassword] = useState('')
+
+  useEffect(() => {
+    // Initialize Supabase client on mount so it processes #access_token from URL hash
+    createClient()
+  }, [])
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
