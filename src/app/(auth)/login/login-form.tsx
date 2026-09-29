@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Loader2, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
 
 export default function LoginForm() {
   const supabase = createClient()
@@ -96,6 +97,14 @@ export default function LoginForm() {
             {loading && <Loader2 data-icon="inline-start" className="animate-spin" />}
             {loading ? 'Ingresando...' : 'Ingresar'}
           </Button>
+          <div className="text-center">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
         </form>
 
         <div className="flex items-center gap-3">
