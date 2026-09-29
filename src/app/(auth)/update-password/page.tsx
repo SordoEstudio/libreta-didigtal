@@ -10,7 +10,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Loader2 } from 'lucide-react'
 
 export default function UpdatePasswordPage() {
-  const supabase = createClient()
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -31,6 +30,7 @@ export default function UpdatePasswordPage() {
     setLoading(true)
     setError(null)
 
+    const supabase = createClient()
     const { error } = await supabase.auth.updateUser({ password })
 
     if (error) {

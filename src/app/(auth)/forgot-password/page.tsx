@@ -10,7 +10,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
-  const supabase = createClient()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -21,6 +20,7 @@ export default function ForgotPasswordPage() {
     setLoading(true)
     setError(null)
 
+    const supabase = createClient()
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${appUrl}/auth/callback?redirect=/update-password`,
