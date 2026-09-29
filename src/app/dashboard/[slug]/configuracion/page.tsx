@@ -45,7 +45,7 @@ export default async function ConfiguracionPage({ params }: Params) {
             <Button
               variant="outline"
               size="sm"
-              render={<Link href={`/dashboard/${slug}/configuracion/años-lectivos`} />}
+              render={<Link href={`/dashboard/${slug}/configuracion/anos-lectivos`} />}
             >
               Gestionar
             </Button>
