@@ -12,7 +12,6 @@ import { Loader2, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LoginForm() {
-  const supabase = createClient()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') ?? '/dashboard'
@@ -27,6 +26,7 @@ export default function LoginForm() {
     setLoading(true)
     setError(null)
 
+    const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
@@ -41,6 +41,7 @@ export default function LoginForm() {
 
   async function handleGoogleLogin() {
     setLoading(true)
+    const supabase = createClient()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
