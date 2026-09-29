@@ -3,6 +3,9 @@
 > **Rama:** `feat/g1-g5-functional`  
 > **Fecha:** 2026-09-29
 
+> **Leyenda de estado:**  
+> ☐ pendiente · ✅ ok · ❌ falla · ⏸ bloqueado (requiere dominio)
+
 ---
 
 ## ⚠️ Acciones manuales antes de testear en prod
@@ -10,8 +13,8 @@
 | # | Acción | Por qué |
 |---|--------|---------|
 | M1 | Verificar `NEXT_PUBLIC_APP_URL` en Vercel → Settings → Env Vars | El recovery link usa esta variable. Si es incorrecto, el email de bienvenida apunta a la URL equivocada. |
-| M2 | Revisar Resend dashboard después del primer usuario creado | Confirmar que el email con botón "Crear contraseña" llega con link válido (no el de `/login`). |
-| M3 | Hacer test de punta a punta: crear usuario → click link → set password → login | No hay test automatizado que cubra el flujo OAuth/Supabase recovery en CI. |
+| M2 | ⏸ Revisar Resend dashboard después del primer usuario creado | **Requiere dominio propio.** Confirmar que el email con botón "Crear contraseña" llega con link válido. |
+| M3 | ⏸ Test de punta a punta: crear usuario → click link → set password → login | **Requiere dominio propio** para que Resend envíe emails. |
 | M4 | Aplicar migración si hay cambios de schema pendientes | No hay migraciones nuevas en G1–G5, pero confirmar que `alumno_responsables` tiene las RLS de migration 11 aplicadas en prod. |
 
 ---
@@ -24,15 +27,15 @@
 | # | Test | Resultado |
 |---|------|-----------|
 | G1.1 | Admin crea usuario nuevo (email, nombre, rol) → respuesta 201 | ☐ |
-| G1.2 | Email recibido en destinatario tiene botón **"Crear contraseña"** (no "Ingresar") | ☐ |
-| G1.3 | Click en botón del email → redirige a `/update-password` autenticado | ☐ |
+| G1.2 | ⏸ Email recibido tiene botón **"Crear contraseña"** (no "Ingresar") | ⏸ requiere dominio Resend |
+| G1.3 | ⏸ Click en botón del email → redirige a `/update-password` autenticado | ⏸ requiere dominio Resend |
 | G1.4 | `/update-password`: contraseñas no coinciden → alerta de error visible, no redirige | ☐ |
 | G1.5 | `/update-password`: contraseña < 8 caracteres → alerta, no redirige | ☐ |
 | G1.6 | `/update-password`: contraseña válida → redirige a `/dashboard` | ☐ |
-| G1.7 | Admin agrega usuario existente (mismo email, distinto rol) → NO recibe email de setup (botón "Ingresar") | ☐ |
+| G1.7 | ⏸ Admin agrega usuario existente → NO recibe email de setup | ⏸ requiere dominio Resend |
 | G1.8 | `/login`: link **"¿Olvidaste tu contraseña?"** visible debajo del botón Ingresar | ☐ |
-| G1.9 | `/forgot-password`: email válido → mensaje de confirmación; no revela si existe | ☐ |
-| G1.10 | `/forgot-password`: click en link del email → redirige a `/update-password` | ☐ |
+| G1.9 | `/forgot-password`: email válido → muestra mensaje de confirmación | ☐ |
+| G1.10 | ⏸ `/forgot-password`: click en link del email → redirige a `/update-password` | ⏸ requiere dominio Resend |
 
 ---
 
@@ -114,15 +117,19 @@
 
 Cubrir el caso de primer cliente real:
 
+**Pasos 4, 8 requieren dominio Resend** (email delivery). Hasta entonces, testear con usuarios creados manualmente en Supabase Auth con contraseña ya seteada.
+
 ```
 1. Superadmin crea institución
 2. Admin crea año lectivo con períodos trimestral → activa año
 3. Admin crea cursos
-4. Admin agrega docente (nuevo usuario) → docente recibe email → crea contraseña → logra ingresar
+4. ⏸ Admin agrega docente → docente recibe email → crea contraseña → logra ingresar
+   (sin dominio: crear usuario en Supabase Auth manualmente con contraseña, luego agregar membership)
 5. Admin crea materias en cada curso → asigna docente
 6. Admin agrega alumnos
 7. Admin agrega responsable → asigna a alumno
-8. Responsable recibe email → crea contraseña → ingresa → ve "Mis alumnos" → ve libreta (vacía)
+8. ⏸ Responsable recibe email → crea contraseña → ingresa → ve "Mis alumnos" → ve libreta (vacía)
+   (sin dominio: ídem paso 4)
 9. Docente ingresa → va a Cursos → entra a materia → crea evaluación → carga notas
 10. Responsable refresca libreta → ve notas cargadas
 ```
@@ -131,7 +138,7 @@ Cubrir el caso de primer cliente real:
 
 ## Notas de regresión
 
-- Flujo de login Google: no afectado (no se tocó OAuth path)
+- ⏸ Flujo de login Google: **requiere dominio** para configurar OAuth redirect URI en Google Console
 - Cursos: turno/nivel siguen funcionando con valores `mañana|tarde|noche`
 - Evaluaciones: peso/ponderación removidos — confirmar que no queda referencia visible
 - Rol múltiple (admin+docente): verificar que admin que también es docente ve ambas secciones del sidebar
