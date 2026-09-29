@@ -64,3 +64,36 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (error) return Err.server(error.message)
   return ok(data)
 }
+
+export async function DELETE(_request: NextRequest, { params }: Params) {
+  const { id } = await params
+  const session = await getSession()
+  if (!session) return Err.unauthorized()
+
+  const supabase = await createClient()
+  const { data: materia } = await supabase
+    .from('materias')
+    .select('institucion_id')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
+
+  if (!materia) return Err.notFound()
+  if (!isSuperadmin(session) && !hasRole(session, materia.institucion_id, 'admin')) return Err.forbidden()
+
+  const { count } = await supabase
+    .from('notas')
+    .select('evaluaciones!inner(materia_id)', { count: 'exact', head: true })
+    .eq('evaluaciones.materia_id', id)
+    .is('deleted_at', null)
+
+  if ((count ?? 0) > 0) return Err.validation('La materia tiene notas cargadas. No se puede eliminar.')
+
+  const { error } = await supabase
+    .from('materias')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+
+  if (error) return Err.server(error.message)
+  return ok({ deleted: true })
+}

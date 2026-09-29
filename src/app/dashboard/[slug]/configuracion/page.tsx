@@ -13,6 +13,9 @@ import EliminarAñoButton from './periodos/eliminar-año-button'
 import NuevoCursoSheet from '../cursos/nuevo-curso-sheet'
 import NuevaMateriaSheet from '../cursos/[curso_id]/nueva-materia-sheet'
 import AsignarDocenteSheet from './asignar-docente-sheet'
+import EditarCursoSheet from './editar-curso-sheet'
+import EliminarCursoButton from './eliminar-curso-button'
+import EliminarMateriaButton from './eliminar-materia-button'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -140,17 +143,33 @@ export default async function ConfiguracionPage({ params, searchParams }: Props)
                 <ul className="py-1">
                   {cursos.map(c => (
                     <li key={c.id}>
-                      <Link
-                        href={`/dashboard/${slug}/configuracion?año=${selectedAño.id}&curso=${c.id}`}
-                        className={`flex items-center justify-between px-4 py-2.5 text-sm hover:bg-accent transition-colors ${
-                          selectedCurso?.id === c.id ? 'bg-accent font-medium' : ''
-                        }`}
-                      >
-                        <span>{c.nombre}</span>
-                        {c.turno && (
-                          <span className="text-xs text-muted-foreground capitalize">{c.turno}</span>
-                        )}
-                      </Link>
+                      <div className={`group flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
+                        selectedCurso?.id === c.id ? 'bg-accent font-medium' : 'hover:bg-accent'
+                      }`}>
+                        <Link
+                          href={`/dashboard/${slug}/configuracion?año=${selectedAño.id}&curso=${c.id}`}
+                          className="flex-1 flex items-center gap-2 min-w-0"
+                        >
+                          <span className="truncate">{c.nombre}</span>
+                          {c.turno && (
+                            <span className="text-xs text-muted-foreground capitalize shrink-0">{c.turno}</span>
+                          )}
+                        </Link>
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <EditarCursoSheet
+                            cursoId={c.id}
+                            initialNombre={c.nombre}
+                            initialNivel={c.nivel ?? null}
+                            initialTurno={c.turno ?? null}
+                          />
+                          <EliminarCursoButton
+                            cursoId={c.id}
+                            cursoNombre={c.nombre}
+                            slug={slug}
+                            añoId={selectedAño.id}
+                          />
+                        </div>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -203,12 +222,18 @@ export default async function ConfiguracionPage({ params, searchParams }: Props)
                                 {docente?.nombre ?? <span className="italic">Sin docente</span>}
                               </TableCell>
                               <TableCell>
-                                <AsignarDocenteSheet
-                                  materiaId={m.id}
-                                  materiaNombre={m.nombre}
-                                  docenteActualId={docente?.id}
-                                  instId={inst.id}
-                                />
+                                <div className="flex items-center gap-0.5">
+                                  <AsignarDocenteSheet
+                                    materiaId={m.id}
+                                    materiaNombre={m.nombre}
+                                    docenteActualId={docente?.id}
+                                    instId={inst.id}
+                                  />
+                                  <EliminarMateriaButton
+                                    materiaId={m.id}
+                                    materiaNombre={m.nombre}
+                                  />
+                                </div>
                               </TableCell>
                             </TableRow>
                           )
